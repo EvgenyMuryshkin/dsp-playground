@@ -27,6 +27,6 @@ export class Glyph extends Component<IProps> {
     render() {
         const { onClick } = this.props;
 
-        return <a onClick={() => onClick?.()}><Icon icon={this.resolveIcon()} {...this.props} /></a> 
+        return <div style={{ display: "inline-block" }} onClick={() => onClick?.()}><Icon icon={this.resolveIcon()} {...this.props} /></div> 
     }
 }

@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { Generate, Signal, Wave } from "../../lib";
+import { Generate, Signal } from "../../lib";
 import { Glyph, WaveEditor } from "..";
 import "./signal-editor.scss";
 

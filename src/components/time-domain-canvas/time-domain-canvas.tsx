@@ -5,6 +5,7 @@ import "./time-domain-canvas.scss";
 interface IProps {
     signal: Signal;
     samplingRate: number;
+    duration: number;
 }
 
 interface IPoint2D {
@@ -15,7 +16,6 @@ interface IPoint2D {
 interface IState {
     width: number;
     height: number;
-    duration: number;
 }
 
 export class TimeDomainCanvas extends Component<IProps, IState> {
@@ -25,8 +25,7 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
         super(props);
         this.state = {
             width: 1024,
-            height: 300,
-            duration: 2
+            height: 300
         }
     }
 
@@ -38,30 +37,30 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
         const { width, height } = this.state;
         ctx.clearRect(0, 0, width, height);
 
-        ctx.setLineDash([1,2]) 
+        ctx.setLineDash([1, 2])
         ctx.lineWidth = 1;
 
         ctx.beginPath();
         ctx.moveTo(0, height / 2);
-        ctx.lineTo(width, height /2);
+        ctx.lineTo(width, height / 2);
         ctx.stroke();
-        ctx.setLineDash([]); 
+        ctx.setLineDash([]);
     }
 
     drawTimeDomain() {
-        const { width, height, duration} = this.state;
+        const { width, height } = this.state;
 
         const { canvas } = this;
         if (!canvas) return;
-        
+
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
         this.drawGrid(ctx);
 
-        const { signal, samplingRate} = this.props;
+        const { signal, samplingRate, duration } = this.props;
         if (!signal) return;
-      
+
         const yAxis = height / 2;
 
         const dt = duration / samplingRate;
@@ -73,11 +72,11 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
                     y: Sampling.signalValue(signal, t * dt).r
                 }
             }
-        );
-        
+            );
+
         const maxY = Math.max(...values.map(v => Math.abs(v.y)));
-        const maxScaleY = 1; // 10
-        const scaleY = Convert.between((yAxis - 10) / maxY, 1, maxScaleY);
+        const maxScaleY = 10;
+        const scaleY = Convert.between((yAxis - 10) / maxY, 0.1, maxScaleY);
         const scaleX = width / samplingRate;
 
         ctx.lineWidth = 1;
@@ -115,7 +114,7 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
     }
 
     render() {
-        const { width, height} = this.state;
+        const { width, height } = this.state;
 
         return <canvas
             width={width}
