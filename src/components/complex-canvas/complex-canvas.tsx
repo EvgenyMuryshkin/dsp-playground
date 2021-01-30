@@ -14,6 +14,7 @@ export interface IProps {
     samplingRate: number;
     duration: number;
     stretch: number;
+    showWaves: boolean;
 }
 
 export class ComplexCanvas extends Component<IProps> {
@@ -21,6 +22,12 @@ export class ComplexCanvas extends Component<IProps> {
     camera: THREE.PerspectiveCamera | null = null;
     renderer: THREE.WebGLRenderer | null = null;
     orbitControls: OrbitControls | null = null;
+
+    // The X axis is red (real value)
+    // The Y axis is green (imag value)
+    // The Z axis is blue (time value)
+    axesHelper = new THREE.AxesHelper(2);
+    geometries: BufferGeometry[] = [];
 
     container: HTMLDivElement | null = null;
 
@@ -32,8 +39,12 @@ export class ComplexCanvas extends Component<IProps> {
     init() {
         this.scene = new THREE.Scene();
 
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-        this.camera.position.z = 10;
+        const aspectRation = 1024 / 600; // window.innerWidth / window.innerHeight
+        this.camera = new THREE.PerspectiveCamera(75, aspectRation, 1, 10000);
+
+        this.camera.translateY(20);
+        this.camera.lookAt(0, 0, 0);
+        this.camera.translateX(-Math.PI / 2);
 
         this.renderer = new THREE.WebGLRenderer();
         //this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -41,16 +52,10 @@ export class ComplexCanvas extends Component<IProps> {
         this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
 
         this.createSignal();
+
+        this.requestAnimation();
     }
-    /*
-        componentDidMount()
-        {
-            if (this.renderer?.domElement) {
-                ReactDOM.findDOMNode(this)?.appendChild?.(this.renderer.domElement);
-                requestAnimationFrame( this.animate.bind(this) );
-            }
-        }
-    */
+
     componentDidUpdate() {
         this.createSignal();
     }
@@ -59,30 +64,30 @@ export class ComplexCanvas extends Component<IProps> {
         const { scene, camera } = this;
         if (!scene || !camera) return;
 
-        const { signal, samplingRate, duration, stretch } = this.props;
+        const { signal, samplingRate, duration, stretch, showWaves } = this.props;
         if (!signal) return;
 
         scene.clear();
 
-        // The X axis is red. The Y axis is green. The Z axis is blue.
-        var axesHelper = new THREE.AxesHelper(2);
-        scene.add(axesHelper);
+        this.geometries.forEach(g => g.dispose());
+        this.geometries = [];
 
-        const position = [];
+        scene.add(this.axesHelper);
+
+        const signalPoints = [];
         const dt = 1 / samplingRate;
-        let cameraPosition = 1;
+
         for (const t of Generate.range(0, duration * samplingRate)) {
             const value = Sampling.signalValue(signal, dt * t);
             const nextValue = Sampling.signalValue(signal, dt * (t + 1));
-            position.push(...[
+            signalPoints.push(...[
                 value.r, value.i, dt * t * stretch,
                 nextValue.r, nextValue.i, dt * (t + 1) * stretch
             ])
-
-            cameraPosition = Math.max(cameraPosition, value.r, value.i, nextValue.r, nextValue.i);
         }
+
         const _lineGeometry = new BufferGeometry();
-        _lineGeometry.setAttribute('position', new Float32BufferAttribute(position, 3));
+        _lineGeometry.setAttribute('position', new Float32BufferAttribute(signalPoints, 3));
 
         const line = new Line(
             _lineGeometry,
@@ -93,37 +98,72 @@ export class ComplexCanvas extends Component<IProps> {
 
         scene.add(line);
 
-        // fit signal in camera
-        //camera.position.z = cameraPosition;
+        if (showWaves) {
+            signal.Waves.forEach(wave => {
+                const wavePoints = [];
+                for (const t of Generate.range(0, duration * samplingRate)) {
+                    const value = Sampling.waveValue(wave, dt * t);
+                    const nextValue = Sampling.waveValue(wave, dt * (t + 1));
+                    wavePoints.push(...[
+                        value.r, value.i, dt * t * stretch,
+                        nextValue.r, nextValue.i, dt * (t + 1) * stretch
+                    ])
+                }
+
+                const waveGeometry = new BufferGeometry();
+                waveGeometry.setAttribute('position', new Float32BufferAttribute(wavePoints, 3));
+
+                const waveLine = new Line(
+                    waveGeometry,
+                    new LineBasicMaterial({
+                        color: 0x00ff00,
+                        toneMapped: false
+                    }));
+
+                scene.add(waveLine);
+                this.geometries.push(waveGeometry);
+            });
+        }
+
+        this.geometries.push(_lineGeometry);
     }
 
     fps = 0;
     rendersDate = new Date();
 
+    requestAnimation() {
+        requestAnimationFrame(this.animate.bind(this));
+    }
+
     animate() {
-        const { renderer, scene, camera, orbitControls } = this;
+        const { container, renderer, scene, camera, orbitControls } = this;
+
+        this.requestAnimation();
+
+        if (!container) return;
 
         orbitControls?.update();
+
         if (renderer && scene && camera) {
+
             renderer.render(scene, camera);
             this.fps++;
 
-            if (new Date().getTime() - this.rendersDate.getTime() > 1000) {
-                this.rendersDate = new Date();
-                console.log(`FPS: `, this.fps);
+            const now = new Date();
+            if ((now.getTime() - this.rendersDate.getTime()) > 1000) {
+                this.rendersDate = now;
+                //console.log(`FPS: `, this.fps);
                 this.fps = 0;
             }
         }
-
-        requestAnimationFrame(this.animate.bind(this));
     }
 
     onContainerCreated(d: HTMLDivElement | null) {
         this.container = d;
+
         if (d && this.renderer?.domElement) {
             this.renderer.setSize(d.offsetWidth, d.offsetHeight);
             this.container?.appendChild?.(this.renderer.domElement);
-            requestAnimationFrame(this.animate.bind(this));
         }
 
         window.addEventListener("resize", () => {

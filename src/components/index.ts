@@ -3,3 +3,7 @@ export * from "./signal-editor/signal-editor";
 export * from "./wave-editor/wave-editor";
 export * from "./glyph/glyph";
 export * from "./complex-canvas/complex-canvas";
+export * from "./rows/tr-checkbox";
+export * from "./freq-domain-canvas/freq-domain-canvas";
+export * from "./sampling-canvas/sampling-canvas";
+export * from "./drawing-canvas/drawing-canvas";

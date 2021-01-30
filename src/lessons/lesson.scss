@@ -1,3 +1,9 @@
 .lesson-layout {
     display: flex;
+    position: absolute;
+    height: 100%;
+
+    .lesson-layout-visual {
+        overflow: auto;
+    }
 }

@@ -1,17 +1,18 @@
 import { Component } from "react";
 import { Generate, Signal } from "../../lib";
-import { Glyph, WaveEditor } from "..";
+import { Glyph, IWaveEditorConfig, WaveEditor } from "..";
 import "./signal-editor.scss";
 
 interface IProps {
     signal: Signal;
+    editorConfig: IWaveEditorConfig;
     onChange: (signal: Signal) => void;
 }
 
 export class SignalEditor extends Component<IProps> {
     render() {
-        const { signal, onChange } = this.props;
-        
+        const { signal, editorConfig, onChange } = this.props;
+
         return (
             <div className="signal-editor">
                 <table>
@@ -20,18 +21,18 @@ export class SignalEditor extends Component<IProps> {
                             return (
                                 <tr key={idx}>
                                     <td>
-                                        <WaveEditor wave={w} onChange={(wave) => {
+                                        <WaveEditor wave={w} editorConfig={editorConfig} onChange={(wave) => {
                                             const newWaves = [...signal.Waves];
                                             newWaves.splice(idx, 1, wave);
                                             onChange(new Signal(newWaves));
-                                        }}/>
+                                        }} />
                                     </td>
                                     <td>
-                                        <Glyph glyph="remove" onClick={() => { 
+                                        <Glyph glyph="remove" onClick={() => {
                                             const newWaves = [...signal.Waves];
                                             newWaves.splice(idx, 1);
-                                            onChange(new Signal(newWaves));                                            
-                                         }}/>
+                                            onChange(new Signal(newWaves));
+                                        }} />
                                     </td>
                                 </tr>
                             )
@@ -39,10 +40,10 @@ export class SignalEditor extends Component<IProps> {
                         <tr>
                             <td></td>
                             <td>
-                                <Glyph glyph="add" onClick={() => { 
-                                    const newWaves = [...signal.Waves, Generate.realSignal(10, 0)];
-                                    onChange(new Signal(newWaves));                                            
-                                }}/>
+                                <Glyph glyph="add" onClick={() => {
+                                    const newWaves = [...signal.Waves, Generate.complexSignal(10, 0)];
+                                    onChange(new Signal(newWaves));
+                                }} />
                             </td>
                         </tr>
                     </tbody>

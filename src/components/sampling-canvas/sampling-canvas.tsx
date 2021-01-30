@@ -1,11 +1,11 @@
 import { Component } from "react";
 import { CanvasTools, Convert, Generate, IPoint2D, Sampling, Signal } from "../../lib";
-import "./time-domain-canvas.scss";
+import { IComplexNumber } from "../../lib/complex";
+import "./sampling-canvas.scss";
 
 interface IProps {
-    signal: Signal;
-    samplingRate: number;
-    duration: number;
+    samples: IComplexNumber[],
+    hideMarkers?: boolean;
 }
 
 interface IState {
@@ -13,7 +13,7 @@ interface IState {
     height: number;
 }
 
-export class TimeDomainCanvas extends Component<IProps, IState> {
+export class SamplingCanvas extends Component<IProps, IState> {
     canvas: HTMLCanvasElement | null = null;
 
     constructor(props: IProps) {
@@ -54,21 +54,15 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
 
         this.drawGrid(ctx);
 
-        const { signal, samplingRate, duration } = this.props;
-        if (!signal) return;
+        const { samples, hideMarkers } = this.props;
+        if (!samples) return;
 
         const yAxis = height / 2;
 
-        const dt = duration / samplingRate;
-        const values: IPoint2D[] = Generate
-            .range(0, samplingRate + 1)
-            .map(t => {
-                return {
-                    x: t,
-                    y: Sampling.signalValue(signal, t * dt).r
-                }
-            }
-            );
+        const values = samples.map((s, idx): IPoint2D => ({
+            x: idx,
+            y: s.r
+        }))
 
         const maxY = Math.max(...values.map(v => v.y));
         const minY = Math.min(...values.map(v => v.y));
@@ -76,7 +70,7 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
 
         const maxScaleY = 30;
         const scaleY = Convert.between((yAxis - 20) / absMaxY, 1, maxScaleY);
-        const scaleX = width / samplingRate;
+        const scaleX = width / samples.length;
 
         ctx.lineWidth = 1;
         ctx.imageSmoothingEnabled = true;
@@ -89,11 +83,13 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
         }
 
         // sampling markers
-        for (const value of values) {
-            const from = translate(value);
-            ctx.beginPath();
-            ctx.arc(from.x, from.y, 1, 0, 2 * Math.PI);
-            ctx.stroke();
+        if (!hideMarkers) {
+            for (const value of values) {
+                const from = translate(value);
+                ctx.beginPath();
+                ctx.arc(from.x, from.y, 1, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
         }
 
         ctx.beginPath();
@@ -113,7 +109,7 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
         CanvasTools.drawMinLine(ctx, minY, minLine.y, width);
 
         ctx.font = "15px Arial";
-        const scaleText = `Scale: ${scaleY}, dt: ${dt.toPrecision(4)}`;
+        const scaleText = `Scale: ${scaleY}`;
         const measure = ctx.measureText(scaleText);
         ctx.fillText(scaleText, width - measure.width, 15);
     }
@@ -124,7 +120,7 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
         return <canvas
             width={width}
             height={height}
-            className="time-domain-canvas"
+            className="sampling-canvas"
             ref={(r) => {
                 this.canvas = r;
                 this.drawTimeDomain();

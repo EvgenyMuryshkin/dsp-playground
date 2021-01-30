@@ -1,13 +1,13 @@
 import { Component } from "react";
 import * as Rx from "rxjs";
-import { debounceTime, switchMap } from "rxjs/operators";
+import { debounceTime } from "rxjs/operators";
+import { IMinMax } from "../../lib";
 import "./tr-number-slider.scss";
 
 interface IProps {
     title: string;
     value: number;
-    min: number;
-    max: number;
+    minMax: IMinMax;
     onChange: (value: number) => void;
 }
 
@@ -17,7 +17,7 @@ export class TrNumberSlider extends Component<IProps> {
     constructor(props: IProps) {
         super(props);
         this._subject
-            .pipe(debounceTime(20))
+            .pipe(debounceTime(10))
             .subscribe((value) => {
                 const { onChange } = this.props;
                 onChange(value)
@@ -25,9 +25,10 @@ export class TrNumberSlider extends Component<IProps> {
     }
 
     render() {
-        const { title, value, min, max } = this.props;
+        const { title, value, minMax, onChange } = this.props;
+        const { min, max } = minMax;
 
-        const modified = (value: number) => this._subject.next(value);
+        const modified = (value: number) => onChange(value);//this._subject.next(value);
         return (
             <tr className="tr-number-slider">
                 <td className="tr-number-slider-title">{title}</td>
