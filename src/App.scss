@@ -2,8 +2,20 @@
   box-sizing: border-box;
 }
 
+#root {
+  overflow: hidden;
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
 .App {
+  height:100%;
   text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 
 .App-logo {
@@ -38,4 +50,33 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.menu-lesson {
+  display: inline;
+  font-size: 20px;
+  padding: 3px;
+  margin: 2px;
+  border: 1px solid lightblue;
+  border-radius: 3px;
+  background-color: lightgreen;
+}
+
+.container {
+  height:100%;
+  width:400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.main {
+  width:100%;
+  overflow-y: hidden;
+}
+
+.footer{
+  max-height:30%;
+  width:100%;
 }

@@ -73,7 +73,7 @@ export class DrawingCanvas extends Component<IProps, IState> {
         const yAxis = height / 2;
 
         return {
-            x: p.x,
+            x: Math.round(p.x),
             y: yAxis - p.y
         };
     }

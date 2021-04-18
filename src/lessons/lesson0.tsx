@@ -10,7 +10,7 @@ interface IState {
     lessonParameters: LessonParameters;
 }
 
-export class Lesson1 extends LessonBase<{}, IState> {
+export class Lesson0 extends LessonBase<{}, IState> {
     constructor(props: {}) {
         super(props)
         this.state = {

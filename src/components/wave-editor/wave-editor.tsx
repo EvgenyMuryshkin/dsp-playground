@@ -19,12 +19,21 @@ interface IProps {
 export class WaveEditor extends Component<IProps> {
     render() {
         const { wave, editorConfig, onChange } = this.props;
+        const sign = Math.sign(wave.FrequencyHz) || 1;
+        const freq = sign * Math.floor(Math.abs(wave.FrequencyHz));
+        const fraction = Math.abs(wave.FrequencyHz % 1)
+
         const amplitudeChange = (value: number) => {
             const newWave = Assign.recursive(wave, { Amplitude: value });
             onChange(newWave);
         }
+
         const frequencyChange = (value: number) => {
-            const newWave = Assign.recursive(wave, { FrequencyHz: value });
+            const newWave = Assign.recursive(wave, { FrequencyHz: value + sign * fraction });
+            onChange(newWave);
+        }
+        const frequencyFractionChange = (value: number) => {
+            const newWave = Assign.recursive(wave, { FrequencyHz: value * sign + freq });
             onChange(newWave);
         }
         const phaseChange = (value: number) => {
@@ -44,8 +53,9 @@ export class WaveEditor extends Component<IProps> {
                 <table>
                     <tbody>
                         <TrNumberSlider title="Amplitude" value={wave.Amplitude} minMax={editorConfig.amplitude} onChange={amplitudeChange} />
-                        <TrNumberSlider title="Frequency" value={wave.FrequencyHz} minMax={editorConfig.freqHz} onChange={frequencyChange} />
-                        <TrNumberSlider title="Phase" value={Convert.rad2deg(wave.PhaseRad)} minMax={phaseDeg} onChange={phaseChange} />
+                        <TrNumberSlider title="Frequency, Hz" value={freq} minMax={editorConfig.freqHz} onChange={frequencyChange} />
+                        <TrNumberSlider title="Frequency Fraction" value={fraction} minMax={{ min: 0, max: 0.99 }} step={0.01} onChange={frequencyFractionChange} />
+                        <TrNumberSlider title="Phase, Deg" value={Convert.rad2deg(wave.PhaseRad)} minMax={phaseDeg} onChange={phaseChange} />
                         <TrCheckbox title="Complex" value={wave.Complex} onChange={complexChange} />
                     </tbody>
                 </table>

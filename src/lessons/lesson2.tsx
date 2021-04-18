@@ -13,7 +13,11 @@ export class Lesson2 extends Component<{}, IState> {
     constructor(props: {}) {
         super(props)
         this.state = {
-            lessonParameters: new LessonParameters(1024, 1, 20),
+            lessonParameters: new LessonParameters({
+                samplingRate: 1024,
+                duration: 1,
+                stretch: 20
+            }),
             signal: new Signal([
                 Generate.realSignal(5, 10)
             ])
@@ -26,11 +30,12 @@ export class Lesson2 extends Component<{}, IState> {
 
         const lessonConfig: IWaveEditorConfig = {
             amplitude: { min: 0, max: 10 },
-            freqHz: { min: 0, max: 1024 },
+            freqHz: { min: -1024, max: 1024 },
             phaseRad: { min: 0, max: 2 * Math.PI }
         };
 
         const samples = Sampling.sample(signal, samplingRate);
+
         const rawSpectre = FFT.transform(samples, ftDirection.Forward);
         const reconstructed = FFT.transform(rawSpectre, ftDirection.Backward);
 
@@ -44,8 +49,10 @@ export class Lesson2 extends Component<{}, IState> {
                 </div>
                 <div className="lesson-layout-visual">
                     <TimeDomainCanvas signal={signal} samplingRate={samplingRate} duration={duration} />
+                    {/*
                     <ComplexCanvas signal={signal} samplingRate={samplingRate} duration={duration} stretch={stretch} showWaves={showWaves} />
                     <FreqDomainCanvas samples={samples} />
+                    */}
                     <SamplingCanvas samples={reconstructed} />
                 </div>
             </div>

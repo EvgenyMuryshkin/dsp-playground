@@ -1,5 +1,5 @@
 import * as Rx from "rxjs";
-import { bufferTime, switchMap } from "rxjs/operators";
+import { bufferTime } from "rxjs/operators";
 
 export class BufferStream<T> {
     _subject = new Rx.Subject<T>();

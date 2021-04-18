@@ -8,6 +8,7 @@ interface IProps {
     title: string;
     value: number;
     minMax: IMinMax;
+    step?: number;
     onChange: (value: number) => void;
 }
 
@@ -25,7 +26,7 @@ export class TrNumberSlider extends Component<IProps> {
     }
 
     render() {
-        const { title, value, minMax, onChange } = this.props;
+        const { title, value, minMax, step = 1, onChange } = this.props;
         const { min, max } = minMax;
 
         const modified = (value: number) => onChange(value);//this._subject.next(value);
@@ -38,8 +39,9 @@ export class TrNumberSlider extends Component<IProps> {
                         value={value}
                         min={min}
                         max={max}
+                        step={step}
                         onChange={t => {
-                            modified(parseInt(t.target.value));
+                            modified(parseFloat(t.target.value));
                         }} />
                 </td>
                 <td>
@@ -49,7 +51,7 @@ export class TrNumberSlider extends Component<IProps> {
                         min={min}
                         max={max}
                         onChange={t => {
-                            modified(parseInt(t.target.value));
+                            modified(parseFloat(t.target.value));
                         }} />
                 </td>
             </tr>

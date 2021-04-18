@@ -5,32 +5,17 @@ import { FT, ftDirection } from "./ft";
 export class FFT {
     static rotate(
         cosMap: number[],
+        direction: ftDirection,
         bits: number,
         source: IComplexNumber,
         arg: number): IComplexNumber {
+
         const mask = FT.mask(bits);
-        if (bits === 0) {
-            return {
-                r: source.r,
-                i: source.i,
-            }
-        }
-        else {
-            let cos = 0, sin = 0;
-
-            const cosIdx = arg & mask;
-            const sinIdx = (cosIdx + (cosMap.length >> 2)) & mask;
-
-            cos = cosMap[cosIdx];
-
-            if (bits > 1) {
-                sin = cosMap[sinIdx];
-            }
-
-            return {
-                r: source.r * cos - source.i * sin,
-                i: source.r * sin + source.i * cos
-            }
+        const cos = cosMap[arg & mask];
+        const sin = cosMap[(arg + (cosMap.length >> 2)) & mask];
+        return {
+            r: source.r * cos - source.i * sin,
+            i: source.r * sin + source.i * cos
         }
     }
 
@@ -59,7 +44,7 @@ export class FFT {
                     const eK = result[idx];
                     const oK = result[idx + m];
 
-                    const rotated = FFT.rotate(cosMap, bits, oK, arg);
+                    const rotated = FFT.rotate(cosMap, direction, bits, oK, arg);
 
                     result[idx] = {
                         r: eK.r + rotated.r,

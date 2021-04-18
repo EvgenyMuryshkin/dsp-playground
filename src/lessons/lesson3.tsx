@@ -16,7 +16,11 @@ export class Lesson3 extends Component<{}, IState> {
     constructor(props: {}) {
         super(props)
         this.state = {
-            lessonParameters: new LessonParameters(1024, 1, 20),
+            lessonParameters: new LessonParameters({
+                samplingRate: 1024,
+                duration: 1,
+                stretch: 20
+            }),
             samples: Generate.range(0, 1024).map(s => ({ r: 0, i: 0 }))
         }
     }
@@ -47,7 +51,7 @@ export class Lesson3 extends Component<{}, IState> {
                         })
                     }} />
                     <SamplingCanvas samples={reconstructed} hideMarkers />
-                    <FreqDomainCanvas samples={samples} />
+                    <FreqDomainCanvas samples={samples} type={lessonParameters.type} absValues={lessonParameters.absValues} />
                 </div>
             </div>
         )

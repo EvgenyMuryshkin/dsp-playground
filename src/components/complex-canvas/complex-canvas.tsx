@@ -99,7 +99,17 @@ export class ComplexCanvas extends Component<IProps> {
         scene.add(line);
 
         if (showWaves) {
-            signal.Waves.forEach(wave => {
+            const colors = [
+                0xFFFFFF,
+                0x0000FF,
+                0x00FF00,
+                0x00FFFF,
+                0xC0C0C0,
+                0xFF00FF,
+                0xFFFF00,
+            ];
+
+            signal.Waves.forEach((wave, idx) => {
                 const wavePoints = [];
                 for (const t of Generate.range(0, duration * samplingRate)) {
                     const value = Sampling.waveValue(wave, dt * t);
@@ -116,7 +126,7 @@ export class ComplexCanvas extends Component<IProps> {
                 const waveLine = new Line(
                     waveGeometry,
                     new LineBasicMaterial({
-                        color: 0x00ff00,
+                        color: colors[idx % colors.length],
                         toneMapped: false
                     }));
 

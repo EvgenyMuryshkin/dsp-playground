@@ -59,9 +59,9 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
 
         const yAxis = height / 2;
 
-        const dt = duration / samplingRate;
+        const dt = 1 / samplingRate;
         const values: IPoint2D[] = Generate
-            .range(0, samplingRate + 1)
+            .range(0, duration * samplingRate + 1)
             .map(t => {
                 return {
                     x: t,
@@ -76,7 +76,7 @@ export class TimeDomainCanvas extends Component<IProps, IState> {
 
         const maxScaleY = 30;
         const scaleY = Convert.between((yAxis - 20) / absMaxY, 1, maxScaleY);
-        const scaleX = width / samplingRate;
+        const scaleX = width / values.length;
 
         ctx.lineWidth = 1;
         ctx.imageSmoothingEnabled = true;

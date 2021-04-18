@@ -10,7 +10,7 @@ export class Generate {
 
     static range(from: number, length: number) {
         const result: number[] = [];
-        if (length == 0) return [];
+        if (length === 0) return [];
         if (length > 0) {
             for (let i = 0; i < length; i++) {
                 result.push(i + from);

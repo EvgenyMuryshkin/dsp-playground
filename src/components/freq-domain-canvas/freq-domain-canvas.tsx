@@ -1,11 +1,13 @@
 import { Component } from "react";
 import { Context } from "vm";
-import { CanvasTools, Convert, DFT, FFT, ftDirection, Generate, IPoint2D, Sampling, Signal } from "../../lib";
+import { CanvasTools, Convert, DFT, FFT, ftDirection, ftType, Generate, IPoint2D, Sampling, Signal } from "../../lib";
 import { IComplexNumber } from "../../lib/complex";
 import "./freq-domain-canvas.scss";
 
 interface IProps {
     samples: IComplexNumber[];
+    type: ftType;
+    absValues: boolean;
 }
 
 interface IFreq2D {
@@ -53,29 +55,30 @@ export class FreqDomainCanvas extends Component<IProps, IState> {
     }
 
     drawFreqDomain() {
+        const { type, absValues } = this.props;
         const { width, height } = this.state;
-
         const { rCanvas, iCanvas } = this;
-        if (!rCanvas || !iCanvas) return;
 
-        const rCtx = rCanvas.getContext("2d");
-        const iCtx = iCanvas.getContext("2d");
-        if (!rCtx || !iCtx) return;
+        const rCtx = rCanvas?.getContext("2d");
+        const iCtx = iCanvas?.getContext("2d");
 
-        this.drawGrid(rCtx);
-        this.drawGrid(iCtx);
+        rCtx && this.drawGrid(rCtx);
+        iCtx && this.drawGrid(iCtx);
 
         const { samples } = this.props;
         if (!samples) return;
 
         const yAxis = height / 2;
-        //const rawSpectre = DFT.transform(samples, ftDirection.Forward);
-        const rawSpectre = FFT.transform(samples, ftDirection.Forward);
+        const rawSpectre = type == ftType.DFT
+            ? DFT.transform(samples, ftDirection.Forward)
+            : FFT.transform(samples, ftDirection.Forward);
+
         console.log("Raw spectre:", rawSpectre);
 
         const samplingRate = samples.length;
         // place negative freqs to the left
-        const fft = [...rawSpectre.slice(samplingRate / 2, samplingRate), ...rawSpectre.slice(0, (samplingRate / 2))]
+        const fft = [...rawSpectre.slice(samplingRate / 2, samplingRate), ...rawSpectre.slice(0, (samplingRate / 2))];
+
         if (fft.length != rawSpectre.length) throw new Error("fft length is screwed up");
 
         const rawSpectrePart = (
@@ -121,38 +124,63 @@ export class FreqDomainCanvas extends Component<IProps, IState> {
             CanvasTools.drawMinLine(ctx, minY, minLine.y, width);
         }
 
-        // real part of spectre
-        rawSpectrePart(rCtx, fft, p => p.r);
-        // im part of spectre
-        rawSpectrePart(iCtx, fft, p => p.i);
+        if (rCtx && absValues) {
+            rawSpectrePart(rCtx, fft, p => Math.sqrt(p.r * p.r + p.i * p.i));
+        }
+        else if (rCtx && iCtx) {
+            // real part of spectre
+            rawSpectrePart(rCtx, fft, p => p.r);
+
+            // im part of spectre
+            rawSpectrePart(iCtx, fft, p => p.i);
+        }
     }
 
     render() {
+        const { absValues } = this.props;
         const { width, height } = this.state;
 
-        return (
-            <div>
-                <div>Re</div>
-                <canvas
-                    width={width}
-                    height={height}
-                    className="freq-domain-canvas"
-                    ref={(r) => {
-                        this.rCanvas = r;
-                        this.drawFreqDomain();
-                    }}
-                />
-                <div>Im</div>
-                <canvas
-                    width={width}
-                    height={height}
-                    className="freq-domain-canvas"
-                    ref={(r) => {
-                        this.iCanvas = r;
-                        this.drawFreqDomain();
-                    }}
-                />
-            </div>
-        )
+        if (absValues) {
+            return (
+                <div>
+                    <div>Abs</div>
+                    <canvas
+                        width={width}
+                        height={height}
+                        className="freq-domain-canvas"
+                        ref={(r) => {
+                            this.rCanvas = r;
+                            this.drawFreqDomain();
+                        }}
+                    />
+                </div>
+            )
+        }
+        else {
+            return (
+                <div>
+                    <div>Re</div>
+                    <canvas
+                        width={width}
+                        height={height}
+                        className="freq-domain-canvas"
+                        ref={(r) => {
+                            this.rCanvas = r;
+                            this.drawFreqDomain();
+                        }}
+                    />
+                    <div>Im</div>
+                    <canvas
+                        width={width}
+                        height={height}
+                        className="freq-domain-canvas"
+                        ref={(r) => {
+                            this.iCanvas = r;
+                            this.drawFreqDomain();
+                        }}
+                    />
+                </div>
+            )
+        }
     }
 }
