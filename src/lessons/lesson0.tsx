@@ -48,7 +48,6 @@ export class Lesson0 extends LessonBase<{}, IState> {
             <div>
                 <TimeDomainCanvas signal={signal} samplingRate={samplingRate} duration={duration} />
                 <ComplexCanvas signal={signal} samplingRate={samplingRate} duration={duration} stretch={stretch} showWaves={showWaves} />
-                <FreqDomainCanvas samples={samples} type={lessonParameters.type} absValues={lessonParameters.absValues} />
             </div>
         );
     }

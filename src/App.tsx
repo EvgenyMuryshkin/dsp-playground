@@ -3,6 +3,7 @@ import './App.scss';
 import { Lesson1, Lesson2, Lesson3 } from './lessons';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import { Lesson0 } from './lessons/lesson0';
 
 interface ILesson {
   title: string;
@@ -19,6 +20,10 @@ export class App extends React.Component<{}, IState> {
     super(props);
     this.state = {
       lessons: [
+        {
+          title: "Generator",
+          render: () => <Lesson0 />
+        },
         {
           title: "Signals",
           render: () => <Lesson1 />
